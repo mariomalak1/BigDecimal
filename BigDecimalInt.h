@@ -19,8 +19,50 @@ using namespace std;
 class BigDecimalInt {
 private:
     string arrchar; // vector of chars to hold the digits of the big number
-    int signNumber{}; // value equal 0 if it negative, 1 if it positive
-    BigDecimalInt(){}
+    int signNumber; // value equal 0 if it negative, 1 if it positive
+
+    // empty constructor
+    BigDecimalInt(){
+        arrchar = "";
+        signNumber = 1;
+    }
+
+    // function to get 9's complement of the object
+    void nine_s_complement(BigDecimalInt &dec1){
+        string anotherArr = "";
+        for (int i = 0; i < dec1.arrchar.length(); ++i) {
+            anotherArr += to_string(9 - int(dec1.arrchar[i] - 48));
+        }
+        dec1.arrchar = anotherArr;
+    }
+
+    // function that complete the decimal number with zeroes to be in length with the biggest number
+    void completeWithZeroes(string &arr, int lengthBigOne){
+        lengthBigOne = lengthBigOne - arr.length();
+        string newDec = "";
+        for (int i = 0; i < lengthBigOne; ++i) {
+            newDec += '0';
+        }
+        newDec += arr;
+        arr = newDec;
+    }
+
+    // function to delete all zeroes in the first of the object if founded
+    void RemoveZeroes(string &arr){
+        if (arr[0] == '0' and arr.length() > 1) {
+            int i = 0;
+            string number = arr;
+            arr = "";
+            while (number[i] == '0') {
+                i++;
+                continue;
+            }
+            for (; i < number.length(); i++) {
+                arr += number[i];
+            }
+        }
+    }
+
 public:
     BigDecimalInt(string number);
     BigDecimalInt(int number);
@@ -28,11 +70,17 @@ public:
     // member function that return the addition of two objects of the class
     BigDecimalInt operator+ (BigDecimalInt anotherDec); // arithmetic operator
 
+    // member function that return the subtraction of two objects of the class
+    BigDecimalInt operator- (BigDecimalInt anotherDec); // arithmetic operator
+
     // member function to check  that two big decimal object are the same
     bool operator==(const BigDecimalInt& Dec1);     // logic operator
 
     // member function to check that is this object is greater than the second object
     bool operator> (const BigDecimalInt& Dec1);     // logic operator
+
+    // member function to check that is this object is greater than the second object
+    bool operator< (BigDecimalInt anotherDec);      // logic operator
 
     // friend function to make the first big decimal object is the same to the another object
     BigDecimalInt operator= (const BigDecimalInt &Dec1);  // assignment operator
@@ -129,6 +177,19 @@ bool BigDecimalInt::operator> (const BigDecimalInt& Dec1){
     }
 } // done
 
+bool BigDecimalInt::operator< (BigDecimalInt anotherDec){
+    BigDecimalInt newDecimal;
+    newDecimal.arrchar = arrchar;
+    newDecimal.signNumber = signNumber;
+    if (newDecimal == anotherDec){
+        return false;
+    } else if(newDecimal > anotherDec){
+        return false;
+    }else{
+        return true;
+    }
+}
+
 BigDecimalInt BigDecimalInt::operator=(const BigDecimalInt &Dec1) {
     BigDecimalInt Dec2;
     this->arrchar = Dec1.arrchar;
@@ -137,11 +198,15 @@ BigDecimalInt BigDecimalInt::operator=(const BigDecimalInt &Dec1) {
 }
 
 ostream& operator << (ostream& out, BigDecimalInt Dec){
-    if (Dec.signNumber == 0){
-        out << "-";
-    }
-    for (int i = 0; i < Dec.arrchar.length(); ++i) {
-        out << int(Dec.arrchar[i] - 48);
+    if (Dec.arrchar[0] == 0){
+        out << 0;
+    }else {
+        if (Dec.signNumber == 0) {
+            out << "-";
+        }
+        for (int i = 0; i < Dec.arrchar.length(); ++i) {
+            out << int(Dec.arrchar[i] - 48);
+        }
     }
     return out;
 }
@@ -166,7 +231,6 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
     if(arrchar.length() == anotherDec.arrchar.length() && signNumber == anotherDec.signNumber){
         for(int i = arrchar.length() - 1; i >= 0; i--){
             ans = (int(arrchar[i] - 48)) + (int(anotherDec.arrchar[i] - 48)) + carry;
-            cout << arrchar[i] - 48 << " + " << anotherDec.arrchar[i] - 48 << " + " << carry << endl;
             if(ans > 9){
                 carry += 1;
                 ans -= 10;
@@ -183,16 +247,14 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
     }
 
     // if one decimal is bigger than the second decimal and are equal in sign
-    if (arrchar.length() > anotherDec.arrchar.length() && signNumber == anotherDec.signNumber) {
+    if (arrchar.length() > anotherDec.arrchar.length() && signNumber == anotherDec.signNumber){
         int i = anotherDec.arrchar.length() - 1;
         int j = arrchar.length() - 1;
         for (; i >= 0; i--) {
             ans = (int (arrchar[j] - 48)) + (int (anotherDec.arrchar[i] - 48)) + carry;
-            cout << arrchar[j] - 48 << " + " << anotherDec.arrchar[i] - 48 << " + " << carry << endl;
             if (ans > 9) {
                 carry = 1;
                 ans -= 10;
-                cout << "answer after -10 : " << ans << endl;
             } else {
                 carry = 0;
             }
@@ -239,4 +301,49 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
     return answer;
 }
 
+BigDecimalInt BigDecimalInt :: operator- (BigDecimalInt anotherDec){
+    BigDecimalInt answer;
+
+    // if the second number is negative make this as plus operation
+    if (anotherDec.signNumber == 0){
+        anotherDec.signNumber = 1;
+        return (*this) + anotherDec;
+    } else if (signNumber == 0 and anotherDec.signNumber == 1){
+        signNumber = 1;
+        answer = *this + anotherDec;
+        answer.signNumber = 0;
+        return answer;
+    }else {
+        if (anotherDec.arrchar.length() > arrchar.length()) {
+            completeWithZeroes(arrchar, anotherDec.arrchar.length());
+        } else if (arrchar.length() > anotherDec.arrchar.length()) {
+            completeWithZeroes(anotherDec.arrchar, arrchar.length());
+        }
+        nine_s_complement(anotherDec);
+        cout << "anotherDec : " << anotherDec << endl;
+        answer = (*this) + anotherDec;
+        cout << "answer : " << answer << endl;
+        cout << answer.arrchar.length() << "  " << anotherDec.arrchar.length() << endl;
+        if (answer.arrchar.length() == anotherDec.arrchar.length() + 1){
+            string newArr = "";
+            // object that has the first digit only
+            BigDecimalInt objFirstDigit;
+            objFirstDigit.arrchar = to_string(answer.arrchar[0] - 48);
+            cout << "first object : " << objFirstDigit << endl;
+            for (int i = 1; i < answer.arrchar.length(); ++i) {
+                newArr += answer.arrchar[i];
+            }
+            answer.arrchar = newArr;
+            cout << "answer after delete first number : " << answer << endl;
+            answer = objFirstDigit + answer;
+            cout << "answer after adding the first digit to it : " << answer << endl;
+            RemoveZeroes(answer.arrchar);
+            return answer;
+        }
+        else if (answer.arrchar.length() == anotherDec.arrchar.length()){
+            nine_s_complement(answer);
+            return answer;
+        }
+    }
+}
 #endif //STRINGVERSION_BIGDECIMAL_H
