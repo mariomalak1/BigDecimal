@@ -2,8 +2,8 @@
 #include "BigDecimalInt.h"
 using namespace std;
 int main() {
-    BigDecimalInt mario("318"), malak(127);
-//    cout << (mario < malak) << endl;
+    // -321 - (-226) -> -321 + 226 -> 226 - 321
+    BigDecimalInt mario("-321"), malak(-226);
     cout << mario - malak << endl;
     return 0;
 }

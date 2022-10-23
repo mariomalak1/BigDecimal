@@ -156,7 +156,6 @@ bool BigDecimalInt::operator> (const BigDecimalInt& Dec1){
             if (index == arrchar.length()){
                 return true;
             }
-            cout << "after flag" << endl;
             if (arrchar[index] == Dec1.arrchar[index]){
                 index++;
                 goto checkAgian;
@@ -198,7 +197,10 @@ BigDecimalInt BigDecimalInt::operator=(const BigDecimalInt &Dec1) {
 }
 
 ostream& operator << (ostream& out, BigDecimalInt Dec){
-    if (Dec.arrchar[0] == 0){
+    if (Dec.arrchar == ""){
+        out << 0;
+    }
+    else if (Dec.arrchar[0] == 0){
         out << 0;
     }else {
         if (Dec.signNumber == 0) {
@@ -229,10 +231,11 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
 
     // if two decimals are equal in length and sign
     if(arrchar.length() == anotherDec.arrchar.length() && signNumber == anotherDec.signNumber){
+        answer.signNumber = anotherDec.signNumber;
         for(int i = arrchar.length() - 1; i >= 0; i--){
             ans = (int(arrchar[i] - 48)) + (int(anotherDec.arrchar[i] - 48)) + carry;
             if(ans > 9){
-                carry += 1;
+                carry = 1;
                 ans -= 10;
             }else{
                 carry = 0;
@@ -248,6 +251,7 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
 
     // if one decimal is bigger than the second decimal and are equal in sign
     if (arrchar.length() > anotherDec.arrchar.length() && signNumber == anotherDec.signNumber){
+        answer.signNumber = anotherDec.signNumber;
         int i = anotherDec.arrchar.length() - 1;
         int j = arrchar.length() - 1;
         for (; i >= 0; i--) {
@@ -267,16 +271,18 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
             i--;
         }
         for (; i >= 0; --i) {
-            answer.arrchar += int(arrchar[i] - 48);
+            answer.arrchar += int(arrchar[i]);
         }
         answer.signNumber = signNumber;
     }
 
     // if one decimal is bigger than the second decimal and are equal in sign
     else if (anotherDec.arrchar.length() > arrchar.length() && signNumber == anotherDec.signNumber) {
+        answer.signNumber = anotherDec.signNumber;
         int i = arrchar.length() - 1;
+        int j = anotherDec.arrchar.length() - 1;
         for (; i >= 0; i--) {
-            ans = (int (arrchar[i] - 48)) + (int (anotherDec.arrchar[i] - 48)) + carry;
+            ans = (int (arrchar[i] - 48)) + (int (anotherDec.arrchar[j] - 48)) + carry;
             if (ans > 9) {
                 carry = 1;
                 ans -= 10;
@@ -292,9 +298,23 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
             i--;
         }
         for (; i >= 0; --i) {
-            answer.arrchar += (anotherDec.arrchar[i] - 48);
+            answer.arrchar += (anotherDec.arrchar[i]);
         }
         answer.signNumber = signNumber;
+    }
+
+    // if the second number is negative, then flip the operation to subtraction
+    // ex: 465 + (-321) = 465 - 321
+    else if (anotherDec.signNumber == 0 and signNumber == 1){
+        anotherDec.signNumber = 1;
+        return (*this) - anotherDec;
+    }
+
+    // if the first number is negative, then flip the operation to subtraction
+    // ex: -465 + 321 = 321 - 465
+    else if (anotherDec.signNumber == 1 and signNumber == 0){
+        this->signNumber = 1;
+        return anotherDec - (*this);
     }
 
     reverse(answer.arrchar.begin(), answer.arrchar.end());
@@ -314,34 +334,41 @@ BigDecimalInt BigDecimalInt :: operator- (BigDecimalInt anotherDec){
         answer.signNumber = 0;
         return answer;
     }else {
+
+        // complete the difference between length of the objects with zeroes
         if (anotherDec.arrchar.length() > arrchar.length()) {
             completeWithZeroes(arrchar, anotherDec.arrchar.length());
-        } else if (arrchar.length() > anotherDec.arrchar.length()) {
+        }
+        // complete the difference between length of the objects with zeroes
+        else if (arrchar.length() > anotherDec.arrchar.length()) {
             completeWithZeroes(anotherDec.arrchar, arrchar.length());
         }
+
+        // get the 9's complement of the second number and plus it with the second number
         nine_s_complement(anotherDec);
-        cout << "anotherDec : " << anotherDec << endl;
         answer = (*this) + anotherDec;
-        cout << "answer : " << answer << endl;
-        cout << answer.arrchar.length() << "  " << anotherDec.arrchar.length() << endl;
+
+
+        // remove carry number and add it this number again
         if (answer.arrchar.length() == anotherDec.arrchar.length() + 1){
             string newArr = "";
             // object that has the first digit only
             BigDecimalInt objFirstDigit;
             objFirstDigit.arrchar = to_string(answer.arrchar[0] - 48);
-            cout << "first object : " << objFirstDigit << endl;
             for (int i = 1; i < answer.arrchar.length(); ++i) {
                 newArr += answer.arrchar[i];
             }
             answer.arrchar = newArr;
-            cout << "answer after delete first number : " << answer << endl;
             answer = objFirstDigit + answer;
-            cout << "answer after adding the first digit to it : " << answer << endl;
             RemoveZeroes(answer.arrchar);
             return answer;
         }
+
+        // this number is negative as no carry up from it
         else if (answer.arrchar.length() == anotherDec.arrchar.length()){
+            answer.signNumber = 0;
             nine_s_complement(answer);
+            RemoveZeroes(answer.arrchar);
             return answer;
         }
     }
