@@ -1,6 +1,6 @@
 /*
 * class BigDecimalInt
-         Assignment 1 OOP / Dr. ElRamly
+        * Assignment 1 OOP / Dr. ElRamly
         * created by:
 *      Mario Malak  --> id : 20210313
 *      Aya Mohamed  --> id : 20211020
