@@ -4,7 +4,6 @@
         * created by:
 *      Mario Malak  --> id : 20210313
 *      Aya Mohamed  --> id : 20211020
-*      Islam Ahmed  --> id : 2021
 * created on : 2022/10/5
 */
 
@@ -80,10 +79,10 @@ public:
     bool operator> (const BigDecimalInt& Dec1);     // logic operator
 
     // member function to check that is this object is greater than the second object
-    bool operator< (BigDecimalInt anotherDec);      // logic operator
+    bool operator< (BigDecimalInt &anotherDec);      // logic operator
 
     // friend function to make the first big decimal object is the same to the another object
-    BigDecimalInt operator= (const BigDecimalInt &Dec1);  // assignment operator
+    BigDecimalInt &operator= (const BigDecimalInt &Dec1);  // assignment operator
 
     // operator to print the BigDecimalInt object
     friend ostream& operator << (ostream& out, BigDecimalInt b);  // bitwise operator
@@ -147,36 +146,42 @@ bool BigDecimalInt::operator==(const BigDecimalInt& Dec1){
 
 // must remove all zeroes if the number has in the first
 bool BigDecimalInt::operator> (const BigDecimalInt& Dec1){
-    if ( arrchar.length() == Dec1.arrchar.length()){
-        int index = 0;
-        if (arrchar == Dec1.arrchar){
-            return false;
-        }else{
-            checkAgian:
-            if (index == arrchar.length()){
-                return true;
-            }
-            if (arrchar[index] == Dec1.arrchar[index]){
-                index++;
-                goto checkAgian;
-            }
-            else if (int (arrchar[index] - 48) > int(Dec1.arrchar[index] - 48)){
-                return true;
-            }
-            else {
+    if (this->signNumber == Dec1.signNumber) {
+        if (arrchar.length() == Dec1.arrchar.length()) {
+            int index = 0;
+            if (arrchar == Dec1.arrchar) {
                 return false;
+            } else {
+                checkAgian:
+                if (index == arrchar.length()) {
+                    return true;
+                }
+                if (arrchar[index] == Dec1.arrchar[index]) {
+                    index++;
+                    goto checkAgian;
+                } else if (int(arrchar[index] - 48) > int(Dec1.arrchar[index] - 48)) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+        } else if (arrchar.length() > Dec1.arrchar.length()) {
+            return true;
+        } else {
+            return false;
         }
     }
-    else if(arrchar.length() > Dec1.arrchar.length()){
-        return true;
-    }
+    // if sign is not the same
     else{
-        return false;
+        if (this->signNumber == 1 and Dec1.signNumber == 0){
+            return true;
+        }else{
+            return false;
+        }
     }
 } // done
 
-bool BigDecimalInt::operator< (BigDecimalInt anotherDec){
+bool BigDecimalInt::operator< (BigDecimalInt &anotherDec){
     BigDecimalInt newDecimal;
     newDecimal.arrchar = arrchar;
     newDecimal.signNumber = signNumber;
@@ -189,7 +194,7 @@ bool BigDecimalInt::operator< (BigDecimalInt anotherDec){
     }
 }
 
-BigDecimalInt BigDecimalInt::operator=(const BigDecimalInt &Dec1) {
+BigDecimalInt &BigDecimalInt::operator=(const BigDecimalInt &Dec1) {
     BigDecimalInt Dec2;
     this->arrchar = Dec1.arrchar;
     this->signNumber = Dec1.signNumber;
@@ -254,7 +259,7 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
         answer.signNumber = anotherDec.signNumber;
         int i = anotherDec.arrchar.length() - 1;
         int j = arrchar.length() - 1;
-        for (; i >= 0; i--) {
+        for (; i >= 0; i--, j--) {
             ans = (int (arrchar[j] - 48)) + (int (anotherDec.arrchar[i] - 48)) + carry;
             if (ans > 9) {
                 carry = 1;
@@ -281,7 +286,7 @@ BigDecimalInt BigDecimalInt :: operator+ (BigDecimalInt anotherDec){
         answer.signNumber = anotherDec.signNumber;
         int i = arrchar.length() - 1;
         int j = anotherDec.arrchar.length() - 1;
-        for (; i >= 0; i--) {
+        for (; i >= 0; i--, j--) {
             ans = (int (arrchar[i] - 48)) + (int (anotherDec.arrchar[j] - 48)) + carry;
             if (ans > 9) {
                 carry = 1;
